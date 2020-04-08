@@ -31,14 +31,30 @@ class MyViewController : UIViewController {
 // Present the view controller in the Live View window
 PlaygroundPage.current.liveView = MyViewController()
 
+@objc protocol TDSwiftLineTextFieldDelegate: class {
+    func textFieldDidEndEditing(_ textField: UITextField)
+    func textFieldDidBeginEditing(_ textField: UITextField)
+    func textFieldDidChangeSelection(_ textField: UITextField)
+    func textFieldShouldClear(_ textField: UITextField) -> Bool
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool
+    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason)
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool
+}
+
 class TDSwiftLineTextField: UITextField {
     
     var standByColor: UIColor!
+    
+    // TDSwiftLineTextFieldDelegate
+    weak var lineTextFieldDelegate: TDSwiftLineTextFieldDelegate?
     
     override func layoutSubviews() {
         super.layoutSubviews()
         
         setupUI()
+        setupDelegate()
     }
     
     private func setupUI() {
@@ -54,6 +70,11 @@ class TDSwiftLineTextField: UITextField {
         addBottomLine()
     }
     
+    private func setupDelegate() {
+        // Implement UITextFieldDelegate
+        self.delegate = self
+    }
+    
     private func addBottomLine() {
         // Line instance
         let bottomLine = CALayer()
@@ -66,6 +87,44 @@ class TDSwiftLineTextField: UITextField {
         
         // Add line
         self.layer.addSublayer(bottomLine)
+    }
+}
+
+extension TDSwiftLineTextField: UITextFieldDelegate {
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        lineTextFieldDelegate?.textFieldDidEndEditing(textField)
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        lineTextFieldDelegate?.textFieldDidBeginEditing(textField)
+    }
+    
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        lineTextFieldDelegate?.textFieldDidChangeSelection(textField)
+    }
+    
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        return lineTextFieldDelegate?.textFieldShouldClear(textField) ?? true
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        return lineTextFieldDelegate?.textFieldShouldReturn(textField) ?? true
+    }
+    
+    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+        return lineTextFieldDelegate?.textFieldShouldEndEditing(textField) ?? true
+    }
+    
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        return lineTextFieldDelegate?.textFieldShouldBeginEditing(textField) ?? true
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
+        lineTextFieldDelegate?.textFieldDidEndEditing(textField, reason: reason)
+    }
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        return lineTextFieldDelegate?.textField(textField, shouldChangeCharactersIn: range, replacementString: string) ?? true
     }
 }
 
