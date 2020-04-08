@@ -43,9 +43,17 @@ PlaygroundPage.current.liveView = MyViewController()
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool
 }
 
+enum TDSwiftLineTextFieldStatus {
+    case standBy
+    case highLighted
+    case alerted
+}
+
 class TDSwiftLineTextField: UITextField {
     
     var standByColor: UIColor!
+    var alertedColor: UIColor!
+    var bottomLine: CALayer!
     
     // TDSwiftLineTextFieldDelegate
     weak var lineTextFieldDelegate: TDSwiftLineTextFieldDelegate?
@@ -62,6 +70,7 @@ class TDSwiftLineTextField: UITextField {
         self.tintColor = TDSwiftLineTextFieldSyleSheet.color.tintColor
         self.textColor = TDSwiftLineTextFieldSyleSheet.color.textColor
         self.standByColor = TDSwiftLineTextFieldSyleSheet.color.standByColor
+        self.alertedColor = TDSwiftLineTextFieldSyleSheet.color.alertedColor
         
         // Hide textField details
         self.borderStyle = .none
@@ -77,7 +86,7 @@ class TDSwiftLineTextField: UITextField {
     
     private func addBottomLine() {
         // Line instance
-        let bottomLine = CALayer()
+        bottomLine = CALayer()
         
         // Line position
         bottomLine.frame = CGRect(x: 0.0, y: self.frame.height - TDSwiftLineTextFieldSyleSheet.size.lineThickness, width: self.frame.width, height: TDSwiftLineTextFieldSyleSheet.size.lineThickness)
@@ -87,6 +96,17 @@ class TDSwiftLineTextField: UITextField {
         
         // Add line
         self.layer.addSublayer(bottomLine)
+    }
+    
+    func updateTextFieldStatus(_ status: TDSwiftLineTextFieldStatus) {
+        switch status {
+        case .standBy:
+            bottomLine.backgroundColor = standByColor.cgColor
+        case .highLighted:
+            bottomLine.backgroundColor = tintColor.cgColor
+        case .alerted:
+            bottomLine.backgroundColor = alertedColor.cgColor
+        }
     }
 }
 
@@ -112,11 +132,25 @@ extension TDSwiftLineTextField: UITextFieldDelegate {
     }
     
     func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
-        return lineTextFieldDelegate?.textFieldShouldEndEditing(textField) ?? true
+        // Should end editing
+        let shouldEndEditing = lineTextFieldDelegate?.textFieldShouldEndEditing(textField) ?? true
+        
+        // Highlight textField if will end editing
+        if (shouldEndEditing) { updateTextFieldStatus(.standBy) }
+        
+        // Should end edting result
+        return shouldEndEditing
     }
     
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        return lineTextFieldDelegate?.textFieldShouldBeginEditing(textField) ?? true
+        // Should begin editing
+        let shoudBeginEditing = lineTextFieldDelegate?.textFieldShouldBeginEditing(textField) ?? true
+        
+        // Highlight textField if will begin editing
+        if (shoudBeginEditing) { updateTextFieldStatus(.highLighted) }
+        
+        // Should begin edting result
+        return shoudBeginEditing
     }
     
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
@@ -133,6 +167,7 @@ struct TDSwiftLineTextFieldSyleSheet {
     struct color {
         static let tintColor = UIColor(red:0.15, green:0.75, blue:0.85, alpha:1.0)
         static let standByColor = UIColor(red:0.92, green:0.92, blue:0.96, alpha:0.6)
+        static let alertedColor = UIColor.red
         static let textColor = UIColor.darkText
     }
     
