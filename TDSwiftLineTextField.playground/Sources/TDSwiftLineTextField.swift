@@ -35,6 +35,13 @@ public class TDSwiftLineTextField: UITextField {
         setupDelegate()
     }
     
+    public override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        setupUI()
+        setupDelegate()
+    }
+    
     public override func layoutSubviews() {
         super.layoutSubviews()
         
