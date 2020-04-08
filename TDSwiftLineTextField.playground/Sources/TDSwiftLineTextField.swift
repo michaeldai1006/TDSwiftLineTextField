@@ -1,25 +1,25 @@
 import Foundation
 import UIKit
 
-@objc protocol TDSwiftLineTextFieldDelegate: class {
-    func textFieldDidEndEditing(_ textField: UITextField)
-    func textFieldDidBeginEditing(_ textField: UITextField)
-    func textFieldDidChangeSelection(_ textField: UITextField)
-    func textFieldShouldClear(_ textField: UITextField) -> Bool
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool
-    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason)
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool
+@objc public protocol TDSwiftLineTextFieldDelegate: class {
+    @objc optional func textFieldDidEndEditing(_ textField: UITextField)
+    @objc optional func textFieldDidBeginEditing(_ textField: UITextField)
+    @objc optional func textFieldDidChangeSelection(_ textField: UITextField)
+    @objc optional func textFieldShouldClear(_ textField: UITextField) -> Bool
+    @objc optional func textFieldShouldReturn(_ textField: UITextField) -> Bool
+    @objc optional func textFieldShouldEndEditing(_ textField: UITextField) -> Bool
+    @objc optional func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool
+    @objc optional func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason)
+    @objc optional func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool
 }
 
-enum TDSwiftLineTextFieldStatus {
+public enum TDSwiftLineTextFieldStatus {
     case standBy
     case highLighted
     case alerted
 }
 
-class TDSwiftLineTextField: UITextField {
+public class TDSwiftLineTextField: UITextField {
     
     var standByColor: UIColor!
     var alertedColor: UIColor!
@@ -28,15 +28,21 @@ class TDSwiftLineTextField: UITextField {
     // TDSwiftLineTextFieldDelegate
     weak var lineTextFieldDelegate: TDSwiftLineTextFieldDelegate?
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
+    public required init?(coder: NSCoder) {
+        super.init(coder: coder)
         
         setupUI()
         setupDelegate()
     }
     
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        updateUnderLineFrame()
+    }
+    
     private func setupUI() {
-        // TextField tint
+        // TextField color
         self.tintColor = TDSwiftLineTextFieldSyleSheet.color.tintColor
         self.textColor = TDSwiftLineTextFieldSyleSheet.color.textColor
         self.standByColor = TDSwiftLineTextFieldSyleSheet.color.standByColor
@@ -46,7 +52,7 @@ class TDSwiftLineTextField: UITextField {
         self.borderStyle = .none
         
         // Add under line
-        addBottomLine()
+        addUnderLine()
     }
     
     private func setupDelegate() {
@@ -54,18 +60,22 @@ class TDSwiftLineTextField: UITextField {
         self.delegate = self
     }
     
-    private func addBottomLine() {
+    private func addUnderLine() {
         // Line instance
         bottomLine = CALayer()
         
         // Line position
-        bottomLine.frame = CGRect(x: 0.0, y: self.frame.height - TDSwiftLineTextFieldSyleSheet.size.lineThickness, width: self.frame.width, height: TDSwiftLineTextFieldSyleSheet.size.lineThickness)
+        updateUnderLineFrame()
         
         // Line color
         bottomLine.backgroundColor = self.standByColor.cgColor
         
         // Add line
         self.layer.addSublayer(bottomLine)
+    }
+    
+    private func updateUnderLineFrame() {
+        bottomLine.frame = CGRect(x: 0.0, y: self.frame.height - TDSwiftLineTextFieldSyleSheet.size.lineThickness, width: self.frame.width, height: TDSwiftLineTextFieldSyleSheet.size.lineThickness)
     }
     
     func updateTextFieldStatus(_ status: TDSwiftLineTextFieldStatus) {
@@ -81,29 +91,29 @@ class TDSwiftLineTextField: UITextField {
 }
 
 extension TDSwiftLineTextField: UITextFieldDelegate {
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        lineTextFieldDelegate?.textFieldDidEndEditing(textField)
+    public func textFieldDidEndEditing(_ textField: UITextField) {
+        lineTextFieldDelegate?.textFieldDidEndEditing?(textField)
     }
     
-    func textFieldDidBeginEditing(_ textField: UITextField) {
-        lineTextFieldDelegate?.textFieldDidBeginEditing(textField)
+    public func textFieldDidBeginEditing(_ textField: UITextField) {
+        lineTextFieldDelegate?.textFieldDidBeginEditing?(textField)
     }
     
-    func textFieldDidChangeSelection(_ textField: UITextField) {
-        lineTextFieldDelegate?.textFieldDidChangeSelection(textField)
+    public func textFieldDidChangeSelection(_ textField: UITextField) {
+        lineTextFieldDelegate?.textFieldDidChangeSelection?(textField)
     }
     
-    func textFieldShouldClear(_ textField: UITextField) -> Bool {
-        return lineTextFieldDelegate?.textFieldShouldClear(textField) ?? true
+    public func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        return lineTextFieldDelegate?.textFieldShouldClear?(textField) ?? true
     }
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        return lineTextFieldDelegate?.textFieldShouldReturn(textField) ?? true
+    public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        return lineTextFieldDelegate?.textFieldShouldReturn?(textField) ?? true
     }
     
-    func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
+    public func textFieldShouldEndEditing(_ textField: UITextField) -> Bool {
         // Should end editing
-        let shouldEndEditing = lineTextFieldDelegate?.textFieldShouldEndEditing(textField) ?? true
+        let shouldEndEditing = lineTextFieldDelegate?.textFieldShouldEndEditing?(textField) ?? true
         
         // Highlight textField if will end editing
         if (shouldEndEditing) { updateTextFieldStatus(.standBy) }
@@ -112,9 +122,9 @@ extension TDSwiftLineTextField: UITextFieldDelegate {
         return shouldEndEditing
     }
     
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+    public func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
         // Should begin editing
-        let shoudBeginEditing = lineTextFieldDelegate?.textFieldShouldBeginEditing(textField) ?? true
+        let shoudBeginEditing = lineTextFieldDelegate?.textFieldShouldBeginEditing?(textField) ?? true
         
         // Highlight textField if will begin editing
         if (shoudBeginEditing) { updateTextFieldStatus(.highLighted) }
@@ -123,11 +133,11 @@ extension TDSwiftLineTextField: UITextFieldDelegate {
         return shoudBeginEditing
     }
     
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-        lineTextFieldDelegate?.textFieldDidEndEditing(textField, reason: reason)
+    public func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
+        lineTextFieldDelegate?.textFieldDidEndEditing?(textField, reason: reason)
     }
     
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        return lineTextFieldDelegate?.textField(textField, shouldChangeCharactersIn: range, replacementString: string) ?? true
+    public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        return lineTextFieldDelegate?.textField?(textField, shouldChangeCharactersIn: range, replacementString: string) ?? true
     }
 }
