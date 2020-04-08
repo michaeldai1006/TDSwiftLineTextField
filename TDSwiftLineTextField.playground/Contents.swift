@@ -32,6 +32,9 @@ class MyViewController : UIViewController {
 PlaygroundPage.current.liveView = MyViewController()
 
 class TDSwiftLineTextField: UITextField {
+    
+    var standByColor: UIColor!
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         
@@ -42,6 +45,7 @@ class TDSwiftLineTextField: UITextField {
         // TextField tint
         self.tintColor = TDSwiftLineTextFieldSyleSheet.color.tintColor
         self.textColor = TDSwiftLineTextFieldSyleSheet.color.textColor
+        self.standByColor = TDSwiftLineTextFieldSyleSheet.color.standByColor
         
         // Hide textField details
         self.borderStyle = .none
@@ -58,7 +62,7 @@ class TDSwiftLineTextField: UITextField {
         bottomLine.frame = CGRect(x: 0.0, y: self.frame.height - TDSwiftLineTextFieldSyleSheet.size.lineThickness, width: self.frame.width, height: TDSwiftLineTextFieldSyleSheet.size.lineThickness)
         
         // Line color
-        bottomLine.backgroundColor = self.tintColor.cgColor
+        bottomLine.backgroundColor = self.standByColor.cgColor
         
         // Add line
         self.layer.addSublayer(bottomLine)
